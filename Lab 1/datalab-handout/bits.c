@@ -19,26 +19,26 @@
  *
  * STEP 1: Fill in the following struct with your identifying info.
  */
-//team_struct team =
-//{
-//   /* Team name: Replace with either:
-//      Your login ID if working as a one person team
-//      or, ID1+ID2 where ID1 is the login ID of the first team member
-//      and ID2 is the login ID of the second team member */
-//
-//    "A01625825+A01393116",  //I'm assuming A#'s are ID's
-//
-//   /* Student name 1: Replace with the full name of first team member */
-//   "David Petrizze",
-//   /* Login ID 1: Replace with the login ID of first team member */
-//   "A01625825",
-//
-//   /* The following should only be changed if there are two team members */
-//   /* Student name 2: Full name of the second team member */
-//   "Cody Herndon",
-//   /* Login ID 2: Login ID of the second team member */
-//   "A01393116"
-//};
+team_struct team =
+{
+   /* Team name: Replace with either:
+      Your login ID if working as a one person team
+      or, ID1+ID2 where ID1 is the login ID of the first team member
+      and ID2 is the login ID of the second team member */
+
+    "A01625825+A01393116",  //I'm assuming A#'s are ID's
+
+   /* Student name 1: Replace with the full name of first team member */
+   "David Petrizze",
+   /* Login ID 1: Replace with the login ID of first team member */
+   "A01625825",
+
+   /* The following should only be changed if there are two team members */
+   /* Student name 2: Full name of the second team member */
+   "Cody Herndon",
+   /* Login ID 2: Login ID of the second team member */
+   "A01393116"
+};
 
 #if 0
 /*
