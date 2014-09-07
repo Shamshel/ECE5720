@@ -1,0 +1,10 @@
+#include bits.h
+#include <iostream>
+#include <cassert>
+
+int main()
+{
+  //bitNor(0x6, 0x5) = 0xFFFFFFF8
+  std::cout<<"testing int bitNor(int, int): "<< bitNor(0x6, 0x5) ;
+
+}

@@ -11,7 +11,7 @@
  * case it's OK.  
  */
 
-#include "btest.h"
+//#include "btest.h"
 #include <limits.h>
 
 /*
@@ -124,7 +124,6 @@ NOTES:
      between the maximum ops in the writeup and in this file, consider
      this file the authoritative source.
 #endif
-
 /*
  * STEP 3: Modify the following functions according the coding rules.
  * 

@@ -19,26 +19,26 @@
  *
  * STEP 1: Fill in the following struct with your identifying info.
  */
-//team_struct team =
-//{
-//   /* Team name: Replace with either:
-//      Your login ID if working as a one person team
-//      or, ID1+ID2 where ID1 is the login ID of the first team member
-//      and ID2 is the login ID of the second team member */
-//
-//    "A01625825+A01393116",  //I'm assuming A#'s are ID's
-//
-//   /* Student name 1: Replace with the full name of first team member */
-//   "David Petrizze",
-//   /* Login ID 1: Replace with the login ID of first team member */
-//   "A01625825",
-//
-//   /* The following should only be changed if there are two team members */
-//   /* Student name 2: Full name of the second team member */
-//   "Cody Herndon",
-//   /* Login ID 2: Login ID of the second team member */
-//   "A01393116"
-//};
+team_struct team =
+{
+   /* Team name: Replace with either:
+      Your login ID if working as a one person team
+      or, ID1+ID2 where ID1 is the login ID of the first team member
+      and ID2 is the login ID of the second team member */
+
+    "A01625825+A01393116",  //I'm assuming A#'s are ID's
+
+   /* Student name 1: Replace with the full name of first team member */
+   "David Petrizze",
+   /* Login ID 1: Replace with the login ID of first team member */
+   "A01625825",
+
+   /* The following should only be changed if there are two team members */
+   /* Student name 2: Full name of the second team member */
+   "Cody Herndon",
+   /* Login ID 2: Login ID of the second team member */
+   "A01393116"
+};
 
 #if 0
 /*
@@ -142,12 +142,9 @@ NOTES:
  *   Rating: 1
  */
 int bitNor(int x, int y) {
-       //uses De Morgan's law:
-       //~(x|y) == (~x) & (~y)
        int var1 = ~x;
        int var2 = ~y;
        return var1 & var2;
-
 }
 
 /* 
@@ -168,11 +165,8 @@ int bitXor(int x, int y) {
  *   Rating: 2
  */
 int isNotEqual(int x, int y) {
-  //the xor will result in 0 for equivalence, and nonzero for inequality
-  //normalize the results with logical nots.
-  int var1 = !(x^y);
+  int var1 = ~(x^y);
   return !var1;
-
 }
 /* 
  * getByte - Extract byte n from word x
@@ -193,10 +187,7 @@ int getByte(int x, int n) {
  *   Rating: 2
  */
 int copyLSB(int x) {
-  //uses arithmetic or "sticky" shift to copy MSb into all positions
-  int var1 = x << 31; //make LSb into MSb
-  return (var1 >> 31); //right shift copies MSb to all positions 
-
+  return 2;
 }
 /* 
  * logicalShift - shift x to the right by n, using a logical shift
@@ -217,41 +208,7 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  //increments a variable for each nonzero bit in the word
-  int var1 = x & 0x1;
-  var1 += (x >> 1) & 0x1;
-  var1 += (x >> 2) & 0x1;
-  var1 += (x >> 3) & 0x1;
-  var1 += (x >> 4) & 0x1;
-  var1 += (x >> 5) & 0x1;
-  var1 += (x >> 6) & 0x1;
-  var1 += (x >> 7) & 0x1;
-  var1 += (x >> 8) & 0x1;
-  var1 += (x >> 9) & 0x1;
-  var1 += (x >> 10) & 0x1;
-  var1 += (x >> 11) & 0x1;
-  var1 += (x >> 12) & 0x1;
-  var1 += (x >> 13) & 0x1;
-  var1 += (x >> 14) & 0x1;
-  var1 += (x >> 15) & 0x1;
-  var1 += (x >> 16) & 0x1;
-  var1 += (x >> 17) & 0x1;
-  var1 += (x >> 18) & 0x1;
-  var1 += (x >> 19) & 0x1;
-  var1 += (x >> 20) & 0x1;
-  var1 += (x >> 21) & 0x1;
-  var1 += (x >> 22) & 0x1;
-  var1 += (x >> 23) & 0x1;
-  var1 += (x >> 24) & 0x1;
-  var1 += (x >> 25) & 0x1;
-  var1 += (x >> 26) & 0x1;
-  var1 += (x >> 27) & 0x1;
-  var1 += (x >> 28) & 0x1;
-  var1 += (x >> 29) & 0x1;
-  var1 += (x >> 30) & 0x1;
-  var1 += (x >> 31) & 0x1;
-  return var1;
-
+  return 2;
 }
 /* 
  * bang - Compute !x without using !
@@ -272,13 +229,7 @@ int bang(int x) {
  *   Rating: 4 
  */
 int leastBitPos(int x) {
-  //~0010->1101
-  //1101+1->1110
-  //1110&0010->0010
-  int var1 = ~x;
-  int var2 = var1 + 1;
-  return var2 & x;
-
+  return 2;
 }
 /* 
  * TMax - return maximum two's complement integer 
@@ -287,10 +238,7 @@ int leastBitPos(int x) {
  *   Rating: 1
  */
 int tmax(void) {
-  //places 1 in MSb, and does a bitwise not defines the positive max of an int
-  int var1=0x1;
-  int var2 = var1 << 31; //place 1 in MSb
-  return ~var2; //bitwise not
+  return 2;
 }
 /* 
  * isNonNegative - return 1 if x >= 0, return 0 otherwise 
@@ -310,14 +258,7 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 int isGreater(int x, int y) {
-  //if x is greater than y, then the addition of the negative of x and y
-  //will result in the MSb of the result being 1
-  int var1 = ~x;
-  int var2 = var1 + 1;
-  int var3 = var2 + y;
-  int var4 = var3 >> 31;
-  return var4 & 0x1;
-
+  return 2;
 }
 /* 
  * divpwr2 - Compute x/(2^n), for 0 <= n <= 30
@@ -338,13 +279,7 @@ int divpwr2(int x, int n) {
  *   Rating: 4
  */
 int abs(int x) {
-  //use the MSb and arithmetic shift property to mask off the
-  //incorrect return value
-  int var1 = x >> 31;
-  int var2 = var1 & (~x + 1); //negative value, if x is negative, mask is 0xF...F
-  int var3 = ~var1 & (x); //positive value, if x is positive, mask is 0x0...0
-  return var2 | var3;
-
+  return 2;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
