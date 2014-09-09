@@ -186,9 +186,11 @@ int isNotEqual(int x, int y) {
  */
 int getByte(int x, int n) {
 
+	//Right shift and mask
+
 	int nbits = n << 3;
 
-	return ((x & (0xFF << nbits)) >> nbits) & 0xFF;
+	return 0xFF & (x >> nbits);
 }
 /* 
  * copyLSB - set all bits of result to least significant bit of x
@@ -211,8 +213,21 @@ int copyLSB(int x) {
  *   Max ops: 16
  *   Rating: 3 
  */
+#include <stdio.h>
 int logicalShift(int x, int n) {
-  return ((unsigned int)x) >> n;
+
+	//If the number is negative
+	int highbit = (x >> 31) & 0x1;
+
+	//arithmetic shift
+	x = x >> n;
+
+	//duplicate the high bit into the upper n - 1 bits (using arithmetic shift)
+	int topbits = ((highbit << 31) >> n) << 1;
+
+	x = x ^ topbits; //Invert where this is one, a.k.a. invert the copied "sign" bits
+
+	return x;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -267,10 +282,6 @@ int bitCount(int x) {
  */
 int bang(int x) {
 
-	x = x ^ 0xFFFFFFFE;
-
-	x = x & 0x00000001;
-
 	return x;
 }
 /* 
@@ -310,7 +321,7 @@ int tmax(void) {
  *   Rating: 3
  */
 int isNonNegative(int x) {
-  return !(x & (0x80 << 24));
+  return !(x >> 31);
 }
 /* 
  * isGreater - if x > y  then return 1, else return 0 
@@ -339,7 +350,21 @@ int isGreater(int x, int y) {
  */
 int divpwr2(int x, int n) {
 
-	return (x >> n) + ((x >> 31) & 0x01);
+	//Grab the high bit
+	int highbit = (x >> 31) & 0x01;
+
+	//int invertval = (highbit << 31) >> 31;
+
+	//If negative, take two's complement. Else invert.
+	x = ~x + highbit;
+
+	//Arithmetic shift right (duplicates msb bit, that's what we want)
+	x = x >> n;
+
+	//If negative, take two's complement. Else invert.
+	x = ~x + highbit;
+
+	return x;
 }
 /* 
  * abs - absolute value of x (except returns TMin for TMin)
