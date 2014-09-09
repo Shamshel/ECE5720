@@ -216,40 +216,27 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  //increments a variable for each nonzero bit in the word
-  int var1 = x & 0x1;
-  var1 += (x >> 1) & 0x1;
-  var1 += (x >> 2) & 0x1;
-  var1 += (x >> 3) & 0x1;
-  var1 += (x >> 4) & 0x1;
-  var1 += (x >> 5) & 0x1;
-  var1 += (x >> 6) & 0x1;
-  var1 += (x >> 7) & 0x1;
-  var1 += (x >> 8) & 0x1;
-  var1 += (x >> 9) & 0x1;
-  var1 += (x >> 10) & 0x1;
-  var1 += (x >> 11) & 0x1;
-  var1 += (x >> 12) & 0x1;
-  var1 += (x >> 13) & 0x1;
-  var1 += (x >> 14) & 0x1;
-  var1 += (x >> 15) & 0x1;
-  var1 += (x >> 16) & 0x1;
-  var1 += (x >> 17) & 0x1;
-  var1 += (x >> 18) & 0x1;
-  var1 += (x >> 19) & 0x1;
-  var1 += (x >> 20) & 0x1;
-  var1 += (x >> 21) & 0x1;
-  var1 += (x >> 22) & 0x1;
-  var1 += (x >> 23) & 0x1;
-  var1 += (x >> 24) & 0x1;
-  var1 += (x >> 25) & 0x1;
-  var1 += (x >> 26) & 0x1;
-  var1 += (x >> 27) & 0x1;
-  var1 += (x >> 28) & 0x1;
-  var1 += (x >> 29) & 0x1;
-  var1 += (x >> 30) & 0x1;
-  var1 += (x >> 31) & 0x1;
-  return var1;
+  //setup masks
+  int var1 = 0x55 | 0x55 << 8;
+  int var2 = var1 | var1 << 16; //mask 1
+  
+  int var3 = 0x33 | 0x33 << 8;
+  int var4 = var3 | var3 << 16; //mask 2
+
+  int var5 = 0x0F | 0x0F << 8;
+  int var6 = var5 | var5 << 16; //mask 3
+
+  int var7 = 0xFF | 0xFF << 16; //mask 4
+
+  int var8 = 0xFF | 0xFF << 8; //mask 5
+
+  int var9 = (x & var2) + ((x >> 1) & var2);
+  int var10 = (var9 & var4) + ((var9 >> 2) & var4);
+  int var11 = (var10 & var6) + ((var10 >> 4) & var6);
+  int var12 = (var11 & var7) + ((var11 >> 8) & var7);
+  int var13 = (var12 & var8) + ((var12 >> 16) & var8);
+
+  return var13;
 
 }
 /* 

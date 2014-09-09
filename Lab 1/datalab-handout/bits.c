@@ -237,7 +237,28 @@ int logicalShift(int x, int n) {
 int bitCount(int x) {
   //uses the Hamming weight function to calculate the
   //number of nonzero states in an int
-  return 2;
+
+  //setup masks
+  int var1 = 0x55 | 0x55 << 8;
+  int var2 = var1 | var1 << 16; //mask 1
+  
+  int var3 = 0x33 | 0x33 << 8;
+  int var4 = var3 | var3 << 16; //mask 2
+
+  int var5 = 0x0F | 0x0F << 8;
+  int var6 = var5 | var5 << 16; //mask 3
+
+  int var7 = 0xFF | 0xFF << 16; //mask 4
+
+  int var8 = 0xFF | 0xFF << 8; //mask 5
+
+  int var9 = (x & var2) + ((x >> 1) & var2);
+  int var10 = (var9 & var4) + ((var9 >> 2) & var4);
+  int var11 = (var10 & var6) + ((var10 >> 4) & var6);
+  int var12 = (var11 & var7) + ((var11 >> 8) & var7);
+  int var13 = (var12 & var8) + ((var12 >> 16) & var8);
+
+  return var13;
 
 }
 /* 
