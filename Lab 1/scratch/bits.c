@@ -309,13 +309,28 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 int isGreater(int x, int y) {
-  //if x is greater than y, then the addition of the negative of x and y
-  //will result in the MSb of the result being 1
-  int var1 = ~x;
-  int var2 = var1 + 1;
-  int var3 = var2 + y;
-  int var4 = var3 >> 31;
-  return var4 & 0x1;
+  //if x == y (== 0), then x^y == 0
+  //if -x and y (== 0), then !x[31] & y[31] == 0
+  //if x and -y (== 1), then x[31] & !y[31] == 1
+  //if x and y (== ?)
+  //  if x>y (== 1), then ((~x + y)+1)[31] = 1
+  int var1 = x^y; //test raw inequality
+  int var2 = x >> 31;
+  int var3 = y >> 31; //get MSb masks
+  int var4 = var2 & 0x01; //x[31]
+  int var5 = var3 & 0x01; //y[31]
+  int var6 = var4 ^ var5; //test MSb inequality
+  int var7 = !var6; //MSb equality
+  int var8 = ~x;
+  int var9 = var8 + y;
+  int var10 = var9 + 1;
+  int var11 = var10 >> 31;
+  int var12 = var11 & 0x01; //((~x)+y+1)[31]
+  int var13 = var7 & var12; //sets true if x>y and x[31] == y[31]
+  int var14 = !var4;
+  int var15 = var14 & var5; //!x[31] & y[31]
+  int var16 = var15 | var13;
+  return var1 & var16;
 
 }
 /* 
