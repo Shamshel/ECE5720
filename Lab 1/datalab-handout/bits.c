@@ -158,7 +158,9 @@ int bitNor(int x, int y) {
  *   Rating: 2
  */
 int bitXor(int x, int y) {
-  return 2;
+
+	//heh, there's a circuit for this
+	return ~(~(~(x & y) & y) & ~(~(x & y) & x));
 }
 /* 
  * isNotEqual - return 0 if x == y, and 1 otherwise 
@@ -183,7 +185,10 @@ int isNotEqual(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-  return 2;
+
+	int nbits = n << 3;
+
+	return ((x & (0xFF << nbits)) >> nbits) & 0xFF;
 }
 /* 
  * copyLSB - set all bits of result to least significant bit of x
@@ -207,7 +212,7 @@ int copyLSB(int x) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+  return ((unsigned int)x) >> n;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -261,7 +266,12 @@ int bitCount(int x) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+
+	x = x ^ 0xFFFFFFFE;
+
+	x = x & 0x00000001;
+
+	return x;
 }
 /* 
  * leastBitPos - return a mask that marks the position of the
@@ -300,7 +310,7 @@ int tmax(void) {
  *   Rating: 3
  */
 int isNonNegative(int x) {
-  return 2;
+  return !(x & (0x80 << 24));
 }
 /* 
  * isGreater - if x > y  then return 1, else return 0 
@@ -328,7 +338,8 @@ int isGreater(int x, int y) {
  *   Rating: 2
  */
 int divpwr2(int x, int n) {
-    return 2;
+
+	return (x >> n) + ((x >> 31) & 0x01);
 }
 /* 
  * abs - absolute value of x (except returns TMin for TMin)
@@ -354,6 +365,26 @@ int abs(int x) {
  *   Max ops: 20
  *   Rating: 3
  */
+#include <stdio.h>
 int addOK(int x, int y) {
-  return 2;
+
+	int signx = (x >> 31) & 0x01;
+	int signy = (y >> 31) & 0x01;
+
+	//Put the two signs into one number
+	int signxy = signx | (signy << 1);
+
+	//Perform the action
+	int res = x + y;
+
+	//Look at its sign
+	int signres = (res >> 31) & 0x01;
+
+	//Duplicate the bit
+	signres |= (signres << 1);
+
+	//Check if the xor'd value == 0b00.  This effectively checks whether 
+	//the original x, y signs are the same, and if so, checks whether they 
+	//changed after the operation.
+	return !!((~(signxy ^ signres)) & 0x03);
 }
