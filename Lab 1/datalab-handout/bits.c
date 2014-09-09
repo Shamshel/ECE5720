@@ -213,7 +213,6 @@ int copyLSB(int x) {
  *   Max ops: 16
  *   Rating: 3 
  */
-#include <stdio.h>
 int logicalShift(int x, int n) {
 
 	//If the number is negative
@@ -282,7 +281,12 @@ int bitCount(int x) {
  */
 int bang(int x) {
 
-	return x;
+	int negx = ~x + 1;
+
+	int hibit = (x >> 31) & 0x1;
+	int neghibit = (negx >> 31) & 0x1;
+
+	return ~(hibit | neghibit) & 0x1;
 }
 /* 
  * leastBitPos - return a mask that marks the position of the
@@ -398,7 +402,6 @@ int abs(int x) {
  *   Max ops: 20
  *   Rating: 3
  */
-#include <stdio.h>
 int addOK(int x, int y) {
 
 	int signx = (x >> 31) & 0x01;
