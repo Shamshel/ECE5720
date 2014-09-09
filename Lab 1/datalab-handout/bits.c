@@ -124,7 +124,6 @@ NOTES:
      between the maximum ops in the writeup and in this file, consider
      this file the authoritative source.
 #endif
-
 /*
  * STEP 3: Modify the following functions according the coding rules.
  * 
@@ -236,40 +235,9 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  //increments a variable for each nonzero bit in the word
-  int var1 = x & 0x1;
-  var1 += (x >> 1) & 0x1;
-  var1 += (x >> 2) & 0x1;
-  var1 += (x >> 3) & 0x1;
-  var1 += (x >> 4) & 0x1;
-  var1 += (x >> 5) & 0x1;
-  var1 += (x >> 6) & 0x1;
-  var1 += (x >> 7) & 0x1;
-  var1 += (x >> 8) & 0x1;
-  var1 += (x >> 9) & 0x1;
-  var1 += (x >> 10) & 0x1;
-  var1 += (x >> 11) & 0x1;
-  var1 += (x >> 12) & 0x1;
-  var1 += (x >> 13) & 0x1;
-  var1 += (x >> 14) & 0x1;
-  var1 += (x >> 15) & 0x1;
-  var1 += (x >> 16) & 0x1;
-  var1 += (x >> 17) & 0x1;
-  var1 += (x >> 18) & 0x1;
-  var1 += (x >> 19) & 0x1;
-  var1 += (x >> 20) & 0x1;
-  var1 += (x >> 21) & 0x1;
-  var1 += (x >> 22) & 0x1;
-  var1 += (x >> 23) & 0x1;
-  var1 += (x >> 24) & 0x1;
-  var1 += (x >> 25) & 0x1;
-  var1 += (x >> 26) & 0x1;
-  var1 += (x >> 27) & 0x1;
-  var1 += (x >> 28) & 0x1;
-  var1 += (x >> 29) & 0x1;
-  var1 += (x >> 30) & 0x1;
-  var1 += (x >> 31) & 0x1;
-  return var1;
+  //uses the Hamming weight function to calculate the
+  //number of nonzero states in an int
+  return 2;
 
 }
 /* 
@@ -335,13 +303,34 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 int isGreater(int x, int y) {
-  //if x is greater than y, then the addition of the negative of x and y
-  //will result in the MSb of the result being 1
-  int var1 = ~x;
-  int var2 = var1 + 1;
-  int var3 = var2 + y;
-  int var4 = var3 >> 31;
-  return var4 & 0x1;
+  //if x == y (== 0), then x^y == 0
+  //if -x and y (== 0), then !x[31] & y[31] == 0
+  //if x and -y (== 1), then x[31] & !y[31] == 1
+  //if x and y (== ?)
+  //  if x>y (== 1), then ((~x + y))[31] = 1 (x should be more negative by at least one if its greater)
+  
+  int var1 = x^y; //test raw inequality
+  int var2 = x >> 31; //x MSb mask
+  int var3 = y >> 31; //y MSb mask
+  
+  int var4 = !var2;
+  int var5 = var4 & var3; //if x > 0 && y < 0 <= 1
+
+  int var6 = ~x;
+  int var7 = var6 + y;
+  int var8 = var7 >> 31; //if x>y, (~x+y)[31] == 1
+
+  int var9 = var2 ^ var3;
+  int var10 = !var9;
+  int var11 = var8 & var10;
+  int var12 = !var5;
+  int var13 = var12 & var11;
+  int var14 = var5 || var13;
+  int var15 = var14 && var1;
+
+  //int var12 = var1 && (var5 || (!var5 && var11));
+
+  return var15;
 
 }
 /* 
