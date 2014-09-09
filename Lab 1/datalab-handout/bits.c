@@ -353,16 +353,24 @@ int divpwr2(int x, int n) {
 	//Grab the high bit
 	int highbit = (x >> 31) & 0x01;
 
-	//int invertval = (highbit << 31) >> 31;
-
 	//If negative, take two's complement. Else invert.
 	x = ~x + highbit;
+
+	int toptop = ((x >> 31) & 0x01) & highbit;
 
 	//Arithmetic shift right (duplicates msb bit, that's what we want)
 	x = x >> n;
 
 	//If negative, take two's complement. Else invert.
 	x = ~x + highbit;
+
+
+	//If toptop (special case of 0x80000000), perform twos complement again
+	int allval = ((toptop << 31) >> 31);
+
+	//printf("allval: %d\n", allval);
+
+	x = ((x ^ allval) + toptop);
 
 	return x;
 }
