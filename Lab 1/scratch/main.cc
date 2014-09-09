@@ -37,6 +37,16 @@ int main()
   assert(isGreater(5,4) == 1);
   assert(isGreater(-5,4) == 0);
   assert(isGreater(4,-5) == 1);
+  assert(isGreater(5,5) == 0);
+
+  /*
+  for(int i = INT_MIN; i != INT_MAX; i++)
+    {
+      std::cout<<"testing at: "<<i<<" "<<-i<<std::endl;
+      assert(isGreater(i, -i) == i > -i);
+
+    }
+  */
 
   std::cout<<"Testing abs:\n\r";
   //abs(-1) = 1
