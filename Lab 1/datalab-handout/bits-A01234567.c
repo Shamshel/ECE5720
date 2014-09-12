@@ -218,14 +218,14 @@ int logicalShift(int x, int n) {
 	int highbit = (x >> 31) & 0x1;
 
 	//arithmetic shift
-	int shift = x >> n;
+	x = x >> n;
 
 	//duplicate the high bit into the upper n - 1 bits (using arithmetic shift)
 	int topbits = ((highbit << 31) >> n) << 1;
 
-	int xor = shift ^ topbits; //Invert where this is one, a.k.a. invert the copied "sign" bits
+	x = x ^ topbits; //Invert where this is one, a.k.a. invert the copied "sign" bits
 
-	return xor;
+	return x;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -373,24 +373,25 @@ int divpwr2(int x, int n) {
 	int highbit = (x >> 31) & 0x01;
 
 	//If negative, take two's complement. Else invert.
-	int a = ~x + highbit;
+	x = ~x + highbit;
 
-	int toptop = ((a >> 31) & 0x01) & highbit;
+	int toptop = ((x >> 31) & 0x01) & highbit;
 
 	//Arithmetic shift right (duplicates msb bit, that's what we want)
-	a = a >> n;
+	x = x >> n;
 
 	//If negative, take two's complement. Else invert.
-	a = ~a + highbit;
+	x = ~x + highbit;
 
 
 	//If toptop (special case of 0x80000000), perform twos complement again
-	int b = 0;
-	b = ((toptop << 31) >> 31);
+	int allval = ((toptop << 31) >> 31);
 
-	a = ((a ^ b) + toptop);
+	//printf("allval: %d\n", allval);
 
-	return a;
+	x = ((x ^ allval) + toptop);
+
+	return x;
 }
 /* 
  * abs - absolute value of x (except returns TMin for TMin)
