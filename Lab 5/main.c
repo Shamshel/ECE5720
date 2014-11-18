@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+/*
 _Bool verbose = false;
 
 typedef struct Line
@@ -265,4 +266,115 @@ int main(int _argc, char ** _argv)
 	deinit_cache();
 
 	load_address(0x00012341234, 4);
+}
+*/
+
+#define BLOCK_SIZE 8
+#define X 16
+#define Y 16
+
+int U[X][Y];
+int V[Y][X];
+
+void transpose_submit(int M, int N, int A[N][M], int B[M][N])
+{
+  int i, j, k, l, tmp;
+
+  for(k = 0; k < M/BLOCK_SIZE; k++)
+    {
+      for(l = 0; l < N/BLOCK_SIZE; l++)
+	{
+
+	  for(i = 0; i < BLOCK_SIZE; i++)
+	    {
+	      for(j = 0; j < i; j++)
+		{
+		  tmp = A[i+k*BLOCK_SIZE][j+l*BLOCK_SIZE];
+		  A[i+k*BLOCK_SIZE][j+l*BLOCK_SIZE] = A[j+k*BLOCK_SIZE][i+l*BLOCK_SIZE];
+		  A[j+k*BLOCK_SIZE][i+l*BLOCK_SIZE] = tmp;
+
+		}
+
+	    }
+	  
+	  for(i = 0; i < X; i++)
+	  {
+	    for(j = 0; j < Y; j++)
+		{
+		  printf("%d ",U[j][i]);
+
+		}
+
+	    printf("\n\r");
+
+	  }
+
+	  printf("\n\r");
+
+
+	}
+
+    }
+
+  for(l = 0; l < N/BLOCK_SIZE; l++)
+    {
+	for(k = 0; k < l; k++)
+	{
+
+	  for(i = 0; i < BLOCK_SIZE; i++)
+		{
+		  for(j = BLOCK_SIZE-1; j >= 0; j--)
+		{
+		  B[i+k*BLOCK_SIZE][j+l*BLOCK_SIZE] = A[j+k*BLOCK_SIZE][i+l*BLOCK_SIZE];
+		}
+
+		}
+	}
+	}
+
+}
+
+int main(int _argc, char ** _argv)
+{
+  for(int i = 0; i < X; i++)
+    {
+      for(int j = 0; j < Y; j++)
+	{
+	  U[i][j] = i;
+	  V[i][j] = 0;
+
+	}
+
+    }
+
+  for(int i = 0; i < X; i++)
+    {
+      for(int j = 0; j < Y; j++)
+	{
+	  printf("%d ",U[j][i]);
+
+	}
+
+      printf("\n\r");
+
+    }
+
+  printf("\n\r");
+
+  transpose_submit(Y, X, U, V);
+
+printf("Final:\n");
+	for(int i = 0; i < Y; i++)
+	{
+		for(int j = 0; j < X; j++)
+		{
+			printf("%d ",V[j][i]);
+		}
+
+		printf("\n\r");
+	}
+
+	printf("\n\r");
+
+
 }

@@ -1,8 +1,11 @@
 #!/bin/bash
 
-FILE=traces/trans.trace
+#FILE=traces/trans.trace
 
-echo "---------------------OUR OUTPUT:---------------------"
-./csim -v -s 4 -E 2 -b 4 -t $FILE
-echo "---------------------ACTUAL OUTPUT:---------------------"
-./csim-ref -v -s 4 -E 2 -b 4 -t $FILE
+#echo "---------------------OUR OUTPUT:---------------------"
+#./csim -v -s 4 -E 2 -b 4 -t $FILE
+#echo "---------------------ACTUAL OUTPUT:---------------------"
+#./csim-ref -v -s 4 -E 2 -b 4 -t $FILE
+
+
+./test-trans -M 32 -N 32
