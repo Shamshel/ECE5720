@@ -58,8 +58,6 @@ size_t associativity = 0;
 Set* sets = 0;
 size_t set_num = 0;
 
-uint64_t global_time = 0;
-
 
 size_t num_evictions = 0;
 size_t num_misses = 0;
@@ -161,6 +159,23 @@ _Bool in_cache(uint64_t _addr)
 	return false;
 }
 
+_Bool line_free(uint64_t _addr)
+{
+	int set_id, block, tag;
+
+	address_info(&set_id, &block, &tag, _addr);
+
+	for(size_t i = 0;i < associativity;i ++)
+	{
+		if(!sets[set_id].lines[i].valid_bit)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 //Returns whether the old set was evicted
 void evict_for(uint64_t _addr)
 {
@@ -177,8 +192,9 @@ void evict_for(uint64_t _addr)
 	{
 		if(sets[set_id].lines[i].age == sets[set_id].line_num)
 		{
-			sets[set_id].lines[i].age = global_time;
+			sets[set_id].lines[i].age = 0;
 			sets[set_id].lines[i].tag = tag;
+			sets[set_id].lines[i].valid_bit = true;
 
 			//printf("Evicted!\n");
 		}
@@ -199,10 +215,14 @@ void load_address(uint64_t _address, uint64_t _size)
 	{
 		printf(" miss");
 
-		evict_for(_address);
-
 		num_misses ++;
-		num_evictions ++;
+
+		if(!line_free(_address))
+		{
+			evict_for(_address);
+
+			num_evictions ++;
+		}
 
 		//if(check(_address)) printf("Address in cache now!\n");
 	}
