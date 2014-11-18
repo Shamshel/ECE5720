@@ -10,10 +10,12 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "cachelab.h"
 
-#define OP_BUFF_LEN 256
+#define OP_BUF_LEN 4098
+#define IN_BUF_LEN 4098
 
 typedef struct Line
 {
@@ -216,9 +218,9 @@ void parse_input(char** operation, uint64_t** address, uint64_t** size, size_t* 
   char* delimiters = " ,\n\r";
   char* token;
 
-  char* res_op = (char*)malloc(OP_BUFF_LEN*sizeof(char));
-  uint64_t* res_addr = (uint64_t*)malloc(OP_BUFF_LEN*sizeof(uint64_t));
-  uint64_t* res_size = (uint64_t*)malloc(OP_BUFF_LEN*sizeof(uint64_t));
+  char* res_op = (char*)malloc(OP_BUF_LEN*sizeof(char));
+  uint64_t* res_addr = (uint64_t*)malloc(OP_BUF_LEN*sizeof(uint64_t));
+  uint64_t* res_size = (uint64_t*)malloc(OP_BUF_LEN*sizeof(uint64_t));
   size_t res_ops = 0;
 
   token = strtok(input, delimiters);
@@ -290,7 +292,7 @@ void report(int mode)
 
 int main(int argc, char** argv)
 {
-  long lSize;
+  uint64_t lSize;
   FILE *fp;
 
   int arg_id = 1;
@@ -383,32 +385,48 @@ int main(int argc, char** argv)
   lSize = ftell(fp);
   rewind(fp); //be kind,
 
+  printf("lSize: %ld\n\r", lSize);
+
   char* op = NULL;
   uint64_t* addr = NULL;
   uint64_t* size = NULL;
   size_t ops = 0;
   char* input = NULL;
 
-  input = (char*)calloc(1, lSize+1);
+  uint64_t inSize = 0;
 
-  if(input == NULL)
+  init_cache(set_bits, associativity, block_bits);
+
+  while(lSize > 0)
     {
-      perror("failed to allocate memory for input...");
-      exit(1);
+      inSize = (lSize > IN_BUF_LEN) ? IN_BUF_LEN : lSize;
+
+      printf("inSize: %ld\n\r", (unsigned long)inSize);
+
+      input = (char*)calloc(1, lSize+1);
+
+      if(input == NULL)
+	{
+	  perror("failed to allocate memory for input...");
+	  fclose(fp);
+	  exit(1);
+
+	}
+
+      lSize = lSize - fread(input, 1, inSize, fp);
+
+      printf("lSize: %ld\n\r", (unsigned long)lSize);
+
+      parse_input(&op, &addr, &size, &ops, input);
+
+      printf("num ops: %u\n\r", (unsigned int)ops);
+      printf("first instruction: %c\n\r", op[0]);
 
     }
-
-  fread(input, lSize, 1, fp);
-
-  parse_input(&op, &addr, &size, &ops, input);
-
-  printf("num ops: %u\n\r", (unsigned int)ops);
-  printf("first instruction: %c\n\r", op[0]);
 
   fclose(fp);
   free(input);
 
-  init_cache(set_bits, associativity, block_bits);
   deinit_cache();
 
   load_address(0x00012341234, 4);
