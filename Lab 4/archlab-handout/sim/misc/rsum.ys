@@ -1,0 +1,80 @@
+# Cody Herndon
+# A01393116
+
+# David Petrizze
+# A01625825
+
+#/* rsum_list - Recursive version of sum_list */
+#int rsum_list(list_ptr ls)
+#{
+#	if (!ls)
+#	   return 0;
+#	else {
+#	     int val = ls->val;
+#	     int rest = rsum_list(ls->next);
+#	     return val + rest;
+#	}
+#}
+
+	.pos 0
+Init:
+	irmovl $0x100, %esp
+	irmovl $0x100, %ebp
+	call Main
+	halt
+
+Main:
+	pushl %ebp
+	rrmovl %esp, %ebp	# end preamble
+	
+	irmovl e1e1, %eax
+	pushl %eax
+	call rsum		# rsum(e1e1)
+
+	rrmovl %ebp, %esp	# begin postamble
+	popl %ebp
+	ret
+	
+rsum:
+	pushl %ebp
+	rrmovl %esp, %ebp	# end preamble
+	
+	irmovl $0x00, %edx
+	mrmovl 8(%ebp), %ecx	#ecx = *ls
+
+	addl %edx, %ecx		# set condition flags
+	irmovl $0x00, %eax	# return 0
+	je rsumEnd		# return if ecx == 0
+
+	mrmovl (%ecx), %edx	# edx = ls->val
+	mrmovl 0x04(%ecx), %eax	# eax = ls->next
+	pushl %edx	   	# push val
+	pushl %ecx		# push *ls
+	pushl %eax		# push ls->next
+	call rsum		# rsum(ls->next)
+	popl %ebx		# pop ls->next (unused)
+	popl %ecx		# pop *ls
+	popl %edx		# pop val
+
+	addl %edx, %eax		# return val+rest
+	
+rsumEnd:
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
+
+	.align 4
+# Sample linked list
+e1e1:
+	.long 0x00a
+	.long e1e2
+e1e2:
+	.long 0x0b0
+	.long e1e3
+e1e3:
+	.long 0xc00
+	.long 0
+
+# Create space for the stack
+	.pos 0x100
+Stack:

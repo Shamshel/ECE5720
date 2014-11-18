@@ -1,0 +1,69 @@
+# Cody Herndon
+# A01393116
+
+#/* sum_list - Sum the elements of a linked list */
+#int sum_list(list_ptr ls)
+#{
+#	int val = 0;
+#	while (ls)
+#	{
+#	      val += ls->val;
+#	      ls = ls->next;
+#	}
+#	return val;
+#}
+
+	.pos 0
+Init:
+	irmovl $0x100, %esp
+	irmovl $0x100, %ebp
+	call Main
+	halt
+
+Main:
+	pushl %ebp
+	rrmovl %esp, %ebp	# end preamble
+
+	irmovl e1e1, %eax
+	pushl %eax
+	
+	call sum_list		# sum_list(e1e1)
+
+	rrmovl %ebp, %esp	# begin postamble
+	popl %ebp
+	ret
+
+sum_list:	
+	pushl %ebp
+	rrmovl %esp, %ebp	# end preamble
+
+	mrmovl 0x8(%ebp), %ebx	# ebx = *ls
+	irmovl 0x00, %eax 	# val = 0
+	irmovl 0x00, %edx
+
+Loop:	
+	mrmovl (%ebx), %ecx	# ecx = ls->val
+	addl %ecx, %eax		# val += ls->val
+	mrmovl 0x4(%ebx), %ebx	# *ls = ls->next
+	addl %edx, %ebx
+	jne Loop		# if(*ls == NULL) return val;
+
+sumEnd:
+	rrmovl %ebp, %esp	# begin postamble
+	popl %ebp
+	ret
+
+# Sample linked list
+  	 .align 4
+e1e1:
+	.long 0x00a
+	.long e1e2
+e1e2:
+	.long 0x0b0
+	.long e1e3
+e1e3:
+	.long 0xc00
+	.long 0
+
+# setup stack space
+	.pos 0x100

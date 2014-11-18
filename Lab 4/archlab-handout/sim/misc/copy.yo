@@ -1,0 +1,84 @@
+                      | # Cody Herndon
+                      | # A01393116
+                      | 
+                      | 
+                      | #/* copy_block - Copy src to dest and return xor checksum of src */
+                      | #int copy_block(int *src, int *dest, int len)
+                      | #{
+                      | #	int result = 0;
+                      | #	while (len > 0) {
+                      | #	      int val = *src++;
+                      | #	      *dest++ = val;
+                      | #	      result ˆ= val;
+                      | #	      len--;
+                      | #	}
+                      | #	return result;
+                      | #}
+                      | 
+  0x000:              | 	.pos 0
+  0x000:              | Init:
+  0x000: 308400010000 | 	irmovl $0x100, %esp
+  0x006: 308500010000 | 	irmovl $0x100, %ebp
+  0x00c: 8012000000   | 	call Main
+  0x011: 10           | 	halt
+                      | 
+  0x012:              | Main:
+  0x012: a058         | 	pushl %ebp
+  0x014: 2045         | 	rrmovl %esp, %ebp	# end preamble
+                      | 	
+  0x016: 308380000000 | 	irmovl src, %ebx	# ebx = *src
+  0x01c: a038         | 	pushl %ebx
+                      | 	
+  0x01e: 30838c000000 | 	irmovl dest, %ebx	# ebx = *dest
+  0x024: a038         | 	pushl %ebx
+                      | 	
+  0x026: 308303000000 | 	irmovl $0x3, %ebx	# ebx = len
+  0x02c: a038         | 	pushl %ebx
+                      | 
+  0x02e: 8038000000   | 	call copy_block		#copy_block(int *src, int *dest, int len)
+                      | 
+  0x033: 2054         | 	rrmovl %ebp, %esp	# begin postamble
+  0x035: b058         | 	popl %ebp
+  0x037: 90           | 	ret
+                      | 
+  0x038:              | copy_block:
+  0x038: a058         | 	pushl %ebp
+  0x03a: 2045         | 	rrmovl %esp, %ebp	# end preamble
+                      | 
+  0x03c: 308000000000 | 	irmovl $0x00, %eax	# result = 0
+                      | 	
+  0x042: 503508000000 | 	mrmovl 8(%ebp), %ebx	# ebx = len
+  0x048: 50150c000000 | 	mrmovl 12(%ebp), %ecx	# ecx = *dest
+  0x04e: 502510000000 | 	mrmovl 16(%ebp), %edx	# edx = *src
+                      | 
+  0x054:              | Loop:
+  0x054: 308704000000 | 	irmovl $0x04, %edi
+  0x05a: 506200000000 | 	mrmovl (%edx), %esi	# esi = val
+  0x060: 6072         | 	addl %edi, %edx		# src++
+  0x062: 406100000000 | 	rmmovl %esi, (%ecx)	# dest = val
+  0x068: 6071         | 	addl %edi, %ecx		# dest++
+  0x06a: 6360         | 	xorl %esi, %eax		# result ^= val
+  0x06c: 3087ffffffff | 	irmovl $-1, %edi
+  0x072: 6073         | 	addl %edi, %ebx		# len--
+  0x074: 7454000000   | 	jne Loop   		# if(len == -1) return result;
+                      | 
+  0x079:              | copy_blockEnd:
+  0x079: 2054         | 	rrmovl %ebp, %esp
+  0x07b: b058         | 	popl %ebp
+  0x07d: 90           | 	ret
+                      | 
+                      | # test blocks for function:
+  0x080:              |        	.align 4
+                      | # Source block
+  0x080:              | src:
+  0x080: 0a000000     | 	.long 0x00a
+  0x084: b0000000     | 	.long 0x0b0
+  0x088: 000c0000     | 	.long 0xc00
+                      | 
+                      | # Destination block
+  0x08c:              | dest:
+  0x08c: 11010000     | 	.long 0x111
+  0x090: 22020000     | 	.long 0x222
+  0x094: 33030000     | 	.long 0x333
+                      | 
+  0x100:              | 	.pos 0x100

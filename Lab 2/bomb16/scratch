@@ -1,0 +1,19 @@
+.phase_6
+	rsp = rsp - 8
+	edx = 0x0a
+	esi = 0x00
+	eax = 
+
+
+(rdi+8 = 6303200)
+.fun6
+	r8 = rdi+8
+	rdi+8 = 0x00
+	rdi = rax (input)
+	rdi = rcx (num symbols)
+	if(r8 != 0)
+	      jmp 83
+(83)	if(rcx == 0)
+	       jmp 47
+	r8 = esi
+	

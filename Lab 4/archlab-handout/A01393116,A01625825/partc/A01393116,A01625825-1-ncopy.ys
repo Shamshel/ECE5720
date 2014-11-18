@@ -1,0 +1,152 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len ints to dst.
+# Return the number of positive ints (>0) contained in src.
+#
+# David Petrizze - A01625825
+# Cody Herndon - A01393116
+#
+# First, we decided to unroll the loop into segments of 8.  This
+# way we could minimize the increment operations at the end of
+# each loop iteration.  After unrolling, it was necessary to
+# preserve the original loop for copying the last <7 numbers.
+# This helped a bit, but didn't quite let us reach our goal.
+#
+# Next, we looked at jump mispredictions. It appears the processor 
+# assumes to always take the jump, so we changed each count 
+# increment condition to assume the number is greater than 0, 
+# a.k.a. the jump is always taken.  We decided it was safe to
+# assume most numbers would be greater than 0, so our
+# implementation is fastest when operating on a nonzero dataset.
+# It would be slower on a dataset of complete zeros.
+#
+# Finally, the iaddl command was implemented in the pipelined
+# processor described by pipe-full.hcl.  This command replaced
+# two commands commonly used to increment and decrement variables
+# by a constant value.
+#
+# This brings us to an average on [1, 64] of 10.77.  We were
+# surprised at how large an optimized function can become.
+#
+##################################################################
+	# Function prologue. Do not modify.
+ncopy:	pushl %ebp		# Save old frame pointer
+	rrmovl %esp,%ebp	# Set up new frame pointer
+	pushl %esi		# Save callee-save regs
+	pushl %ebx
+	mrmovl 8(%ebp),%ebx	# src
+	mrmovl 12(%ebp),%ecx	# dst
+	mrmovl 16(%ebp),%edx	# len
+
+	# Loop header
+	xorl %esi,%esi		# count = 0;
+
+	rrmovl %edx, %eax
+	iaddl $-8,%eax
+	andl %eax,%eax		# len < 8?
+	jl Original		# if so, goto Original:
+
+ULoop:
+	mrmovl (%ebx), %eax	# read val from src...
+	rmmovl %eax, (%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u1a
+	jmp u1b
+u1a:
+	iaddl $1, %esi
+u1b:
+	mrmovl 4(%ebx), %eax	# read val from src...
+	rmmovl %eax, 4(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u2a
+	jmp u2b
+u2a:
+	iaddl $1, %esi
+u2b:
+	mrmovl 8(%ebx), %eax	# read val from src...
+	rmmovl %eax, 8(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u3a
+	jmp u3b
+u3a:
+	iaddl $1, %esi
+u3b:
+	mrmovl 12(%ebx), %eax	# read val from src...
+	rmmovl %eax, 12(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u4a
+	jmp u4b
+u4a:
+	iaddl $1, %esi
+u4b:
+	mrmovl 16(%ebx), %eax	# read val from src...
+	rmmovl %eax, 16(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u5a
+	jmp u5b
+u5a:
+	iaddl $1, %esi
+u5b:
+	mrmovl 20(%ebx), %eax	# read val from src...
+	rmmovl %eax, 20(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u6a
+	jmp u6b
+u6a:
+	iaddl $1, %esi
+u6b:
+	mrmovl 24(%ebx), %eax	# read val from src...
+	rmmovl %eax, 24(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u7a
+	jmp u7b
+u7a:
+	iaddl $1, %esi
+u7b:
+	mrmovl 28(%ebx), %eax	# read val from src...
+	rmmovl %eax, 28(%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg u8a
+	jmp u8b
+u8a:
+	iaddl $1, %esi
+u8b:
+
+	iaddl $-8, %edx		# len-=8
+	iaddl $32, %ebx		# src+=8
+	iaddl $32, %ecx		# dst+=8
+
+	rrmovl %edx, %eax
+	iaddl $-8,%eax
+	andl %eax,%eax		# len >= 8?
+	jge ULoop		# if so, goto ULoop:
+
+Original:
+	andl %edx,%edx		# len <= 0?
+	jle Done		# if so, goto Done:
+
+	# Loop body.
+Loop0:	mrmovl (%ebx), %eax	# read val from src...
+	rmmovl %eax, (%ecx)	# ...and store it to dst
+	andl %eax, %eax
+	jg na			# if val > 0, goto na:
+	jmp nb
+na:
+	iaddl $1, %esi		# count ++
+nb:
+	iaddl $-1, %edx		# len--
+	iaddl $4, %ebx		# src++
+	iaddl $4, %ecx		# dst++
+
+	andl %edx,%edx		# len > 0?
+	jg Loop0		# if so, goto Loop0:
+
+
+	# Function epilogue. Do not modify.
+Done:	rrmovl %esi, %eax
+	popl %ebx
+	popl %esi
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
+#/* $end ncopy-ys */

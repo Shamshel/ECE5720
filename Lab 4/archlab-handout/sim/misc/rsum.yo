@@ -1,0 +1,76 @@
+  0x000:              | # Cody Herndon
+                      | # A01393116
+                      | 
+                      | #/* rsum_list - Recursive version of sum_list */
+                      | #int rsum_list(list_ptr ls)
+                      | #{
+                      | #	if (!ls)
+                      | #	   return 0;
+                      | #	else {
+                      | #	     int val = ls->val;
+                      | #	     int rest = rsum_list(ls->next);
+                      | #	     return val + rest;
+                      | #	}
+                      | #}
+                      | 
+  0x000:              | 	.pos 0
+  0x000:              | Init:
+  0x000: 308400010000 | 	irmovl $0x100, %esp
+  0x006: 308500010000 | 	irmovl $0x100, %ebp
+  0x00c: 8012000000   | 	call Main
+  0x011: 10           | 	halt
+                      | 
+  0x012:              | Main:
+  0x012: a058         | 	pushl %ebp
+  0x014: 2045         | 	rrmovl %esp, %ebp	# end preamble
+                      | 	
+  0x016: 30806c000000 | 	irmovl e1e1, %eax
+  0x01c: a008         | 	pushl %eax
+  0x01e: 8028000000   | 	call rsum		# rsum(e1e1)
+                      | 
+  0x023: 2054         | 	rrmovl %ebp, %esp	# begin postamble
+  0x025: b058         | 	popl %ebp
+  0x027: 90           | 	ret
+                      | 	
+  0x028:              | rsum:
+  0x028: a058         | 	pushl %ebp
+  0x02a: 2045         | 	rrmovl %esp, %ebp	# end preamble
+                      | 	
+  0x02c: 308200000000 | 	irmovl $0x00, %edx
+  0x032: 501508000000 | 	mrmovl 8(%ebp), %ecx	#ecx = *ls
+                      | 
+  0x038: 6021         | 	addl %edx, %ecx		# set condition flags
+  0x03a: 308000000000 | 	irmovl $0x00, %eax	# return 0
+  0x040: 7364000000   | 	je rsumEnd		# return if ecx == 0
+                      | 
+  0x045: 502100000000 | 	mrmovl (%ecx), %edx	# edx = ls->val
+  0x04b: 500104000000 | 	mrmovl 0x04(%ecx), %eax	# eax = ls->next
+  0x051: a028         | 	pushl %edx	   	# push val
+  0x053: a018         | 	pushl %ecx		# push *ls
+  0x055: a008         | 	pushl %eax		# push ls->next
+  0x057: 8028000000   | 	call rsum		# rsum(ls->next)
+  0x05c: b038         | 	popl %ebx		# pop ls->next (unused)
+  0x05e: b018         | 	popl %ecx		# pop *ls
+  0x060: b028         | 	popl %edx		# pop val
+                      | 
+  0x062: 6020         | 	addl %edx, %eax		# return val+rest
+                      | 	
+  0x064:              | rsumEnd:
+  0x064: 2054         | 	rrmovl %ebp, %esp
+  0x066: b058         | 	popl %ebp
+  0x068: 90           | 	ret
+                      | 
+  0x06c:              | 	.align 4
+                      | # Sample linked list
+  0x06c:              | e1e1:
+  0x06c: 0a000000     | 	.long 0x00a
+  0x070: 74000000     | 	.long e1e2
+  0x074:              | e1e2:
+  0x074: b0000000     | 	.long 0x0b0
+  0x078: 7c000000     | 	.long e1e3
+  0x07c:              | e1e3:
+  0x07c: 000c0000     | 	.long 0xc00
+  0x080: 00000000     | 	.long 0
+                      | 
+                      | # Create space for the stack
+  0x100:              | 	.pos 0x100
