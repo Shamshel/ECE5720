@@ -14,8 +14,8 @@
 
 #include "cachelab.h"
 
-#define OP_BUF_LEN 4098
-#define IN_BUF_LEN 4098
+#define OP_BUF_LEN 16777216
+#define IN_BUF_LEN 16777216
 
 typedef struct Line
 {
@@ -80,12 +80,12 @@ void init_cache(int _set_bits, int _associativity, int _block_bits)
 
 	associativity = _associativity;
 
-	printf("nsets: %lu\n", nsets);
+	/*printf("nsets: %lu\n", nsets);
 	printf("set_mask: %016lX\n", set_mask);
 	printf("block_size: %lu\n", block_size);
 	printf("block_mask: %016lX\n", block_mask);
 	printf("tag_mask: %016lX\n", tag_mask);
-	printf("associativity: %lu\n", associativity);
+	printf("associativity: %lu\n", associativity);*/
 
 	sets = malloc(sizeof(Set)*nsets);
 	set_num = nsets;
@@ -152,10 +152,14 @@ _Bool in_cache(uint64_t _addr)
 		if(sets[set_id].lines[i].tag == tag)
 		{
 			//cache hit
+		  num_hits++;
+		  printf(" hit");
 			return true;
 		}
 	}
 
+	num_misses++;
+	printf(" miss");
 	return false;
 }
 
@@ -196,6 +200,9 @@ void evict_for(uint64_t _addr)
 			sets[set_id].lines[i].tag = tag;
 			sets[set_id].lines[i].valid_bit = true;
 
+			num_evictions++;
+			printf(" eviction");
+
 			//printf("Evicted!\n");
 		}
 	}
@@ -207,22 +214,17 @@ void load_address(uint64_t _address, uint64_t _size)
 
 	if(in_cache(_address))
 	{
-		printf(" hit");
 
-		num_hits ++;
 	}
 	else
-	{
-		printf(" miss");
-
-		num_misses ++;
-
+	  {
 		if(!line_free(_address))
 		{
 			evict_for(_address);
 
-			num_evictions ++;
 		}
+
+		in_cache(_address);
 
 		//if(check(_address)) printf("Address in cache now!\n");
 	}
@@ -231,35 +233,40 @@ void load_address(uint64_t _address, uint64_t _size)
 }
 void store_address(uint64_t _address, uint64_t _size)
 {
-	printf("----store_address()----\n");
+  printf("S %ld,%ld", _address, _size);
 
 	if(in_cache(_address))
 	{
-		printf("Address in cache!\n");
+
 	}
 	else
 	{
-		printf("Address not in cache!\n");
 
 		evict_for(_address);
 
-		if(in_cache(_address)) printf("Address in cache now!\n");
+		if(in_cache(_address))
+		  {
+		  }
 	}
+	printf("\n\r");
 }
 void modify_address(uint64_t _address, uint64_t _size)
 {
+  printf("M %ld,%ld", _address, _size);
+
 	if(in_cache(_address))
 	{
-		printf("Address in cache!\n");
 	}
 	else
 	{
-		printf("Address not in cache!\n");
 
 		evict_for(_address);
 
-		if(in_cache(_address)) printf("Address in cache now!\n");
+		if(in_cache(_address))
+		  {
+		  }
 	}
+	printf("\n\r");
 }
 
 void parse_input(char** operation, uint64_t** address, uint64_t** size, size_t* ops, char* input)
@@ -320,22 +327,34 @@ void parse_input(char** operation, uint64_t** address, uint64_t** size, size_t* 
 
 }
 
-void report(int mode)
+void execute_operation(char operation, uint64_t addr, uint64_t size)
 {
-  switch(mode)
+  if(operation == 'L')
     {
-    case 0:
-      printf("hit ");
-      break;
-    case 1:
-      printf("miss ");
-      break;
-    case 2:
-      printf("eviction ");
-      break;
-    default:
-      printf("unknown\n\r");
-      break;
+      //printf("Load operation!\n\r");
+      load_address(addr, size);
+
+    }
+
+  else if(operation == 'S')
+    {
+      //printf("Store operation!\n\r");
+      store_address(addr, size);
+
+    }
+
+  else if(operation == 'M')
+    {
+      //printf("Modify operation!\n\r");
+      modify_address(addr, size);
+
+    }
+
+  else
+    {
+      //something went wrong!
+      perror("Invalid operation!");
+      exit(1);
 
     }
 
@@ -436,8 +455,6 @@ int main(int argc, char** argv)
   lSize = ftell(fp);
   rewind(fp); //be kind,
 
-  printf("lSize: %ld\n\r", lSize);
-
   char* op = NULL;
   uint64_t* addr = NULL;
   uint64_t* size = NULL;
@@ -452,8 +469,6 @@ int main(int argc, char** argv)
     {
       inSize = (lSize > IN_BUF_LEN) ? IN_BUF_LEN : lSize;
 
-      printf("inSize: %ld\n\r", (unsigned long)inSize);
-
       input = (char*)calloc(1, lSize+1);
 
       if(input == NULL)
@@ -466,21 +481,20 @@ int main(int argc, char** argv)
 
       lSize = lSize - fread(input, 1, inSize, fp);
 
-      printf("lSize: %ld\n\r", (unsigned long)lSize);
-
       parse_input(&op, &addr, &size, &ops, input);
 
-      printf("num ops: %u\n\r", (unsigned int)ops);
-      printf("first instruction: %c\n\r", op[0]);
+
+      for(size_t i = 0; i < ops; i++)
+	{
+	  execute_operation(op[i], addr[i], size[i]);
+
+	}
 
     }
 
+  //cleanup
   fclose(fp);
   free(input);
-
-  init_cache(set_bits, associativity, block_bits);
-
-  load_address(0x00012341234, 4);
 
   deinit_cache();
 
