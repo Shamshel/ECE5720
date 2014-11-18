@@ -1,5 +1,7 @@
 #!/bin/bash
 
 
+echo "---------------------OUR OUTPUT:---------------------"
 ./csim -v -s 2 -E 10 -b 2 -t traces/yi.trace
+echo "---------------------ACTUAL OUTPUT:---------------------"
 ./csim-ref -v -s 2 -E 10 -b 2 -t traces/yi.trace

@@ -176,89 +176,129 @@ _Bool line_free(uint64_t _addr)
 	return false;
 }
 
-//Returns whether the old set was evicted
-void evict_for(uint64_t _addr)
+int global_timestamp = 0;
+
+size_t get_oldest_line(int set_id)
+{
+	size_t oldest_id;
+	size_t oldest_timestamp = ~0;
+
+	for(size_t i = 0;i < associativity;i ++)
+	{
+		if(sets[set_id].lines[i].age < oldest_timestamp)
+		{
+			oldest_id = i;
+			oldest_timestamp = sets[set_id].lines[i].age;
+		}
+	}
+
+	return oldest_id;
+}
+
+typedef enum CacheOpStatus { CACHE_HIT, CACHE_MISS, CACHE_MISS_EVICTION } CacheOpStatus;
+
+CacheOpStatus do_op(uint64_t _address, uint64_t _size)
 {
 	int set_id, block, tag;
 
-	address_info(&set_id, &block, &tag, _addr);
+	address_info(&set_id, &block, &tag, _address);
 
 	for(size_t i = 0;i < associativity;i ++)
 	{
-		sets[set_id].lines[i].age ++;
-	}
-
-	for(size_t i = 0;i < associativity;i ++)
-	{
-		if(sets[set_id].lines[i].age == sets[set_id].line_num)
+		if(sets[set_id].lines[i].tag == tag)
 		{
-			sets[set_id].lines[i].age = 0;
-			sets[set_id].lines[i].tag = tag;
-			sets[set_id].lines[i].valid_bit = true;
+			num_hits ++;
+			sets[set_id].lines[i].age = (global_timestamp++);
 
-			//printf("Evicted!\n");
+			return CACHE_HIT;
 		}
 	}
+
+	printf(" miss");
+	num_misses ++;
+
+	for(size_t i = 0;i < associativity;i ++)
+	{
+		if(sets[set_id].lines[i].valid_bit == false)
+		{
+			sets[set_id].lines[i].valid_bit = true;
+			sets[set_id].lines[i].age = (global_timestamp++);
+			sets[set_id].lines[i].tag = tag;
+
+			printf("\n");
+
+			return CACHE_MISS;
+		}
+	}
+
+	int oldest_line = get_oldest_line(set_id);
+
+	//Evict and load
+	sets[set_id].lines[oldest_line].age = (global_timestamp++);
+	sets[set_id].lines[oldest_line].tag = tag;
+	printf(", evicted\n");
+	num_evictions ++;
+
+	return CACHE_MISS_EVICTION;
 }
 
 void load_address(uint64_t _address, uint64_t _size)
 {
 	printf("L %ld,%ld", _address, _size);
 
-	if(in_cache(_address))
+	CacheOpStatus result = do_op(_address, _size);
+
+	if(result == CACHE_HIT)
 	{
-		printf(" hit");
-
-		num_hits ++;
+		printf(" hit\n");
 	}
-	else
+	else if(result == CACHE_MISS)
 	{
-		printf(" miss");
-
-		num_misses ++;
-
-		if(!line_free(_address))
-		{
-			evict_for(_address);
-
-			num_evictions ++;
-		}
-
-		//if(check(_address)) printf("Address in cache now!\n");
+		printf(" miss\n");
 	}
-
-	printf("\n");
+	else if(result == CACHE_MISS_EVICTION)
+	{
+		printf(" miss eviction\n");
+	}
 }
 void store_address(uint64_t _address, uint64_t _size)
 {
-	printf("----store_address()----\n");
+	printf("S %ld,%ld", _address, _size);
 
-	if(in_cache(_address))
+	CacheOpStatus result = do_op(_address, _size);
+
+	if(result == CACHE_HIT)
 	{
-		printf("Address in cache!\n");
+		printf(" hit\n");
 	}
-	else
+	else if(result == CACHE_MISS)
 	{
-		printf("Address not in cache!\n");
-
-		evict_for(_address);
-
-		if(in_cache(_address)) printf("Address in cache now!\n");
+		printf(" miss\n");
+	}
+	else if(result == CACHE_MISS_EVICTION)
+	{
+		printf(" miss eviction\n");
 	}
 }
+
 void modify_address(uint64_t _address, uint64_t _size)
 {
-	if(in_cache(_address))
+	printf("M %ld,%ld", _address, _size);
+
+	CacheOpStatus result1 = do_op(_address, _size);
+	/*CacheOpStatus result2 = */do_op(_address, _size);
+
+	if(result1 == CACHE_HIT)
 	{
-		printf("Address in cache!\n");
+		printf(" hit hit\n");
 	}
-	else
+	else if(result1 == CACHE_MISS)
 	{
-		printf("Address not in cache!\n");
-
-		evict_for(_address);
-
-		if(in_cache(_address)) printf("Address in cache now!\n");
+		printf(" miss hit\n");
+	}
+	else if(result1 == CACHE_MISS_EVICTION)
+	{
+		printf(" miss eviction hit\n");
 	}
 }
 
@@ -480,7 +520,10 @@ int main(int argc, char** argv)
 
   init_cache(set_bits, associativity, block_bits);
 
-  load_address(0x00012341234, 4);
+  load_address(0x00, 4);
+  load_address(0x00, 4);
+  load_address(0x00, 4);
+  load_address(0x00, 4);
 
   deinit_cache();
 
