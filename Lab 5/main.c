@@ -28,14 +28,13 @@ typedef struct Set
 
 size_t nsets = 0;
 uint64_t set_mask = 0;
-uint64_t set_mask_n = 0;
+uint64_t set_bits = 0;
 
 size_t block_size = 0;
 uint64_t block_mask = 0;
-uint64_t block_mask_n = 0;
+uint64_t block_bits = 0;
 
 uint64_t tag_mask = 0;
-uint64_t tag_mask_n = 0;
 
 size_t associativity = 0;
 

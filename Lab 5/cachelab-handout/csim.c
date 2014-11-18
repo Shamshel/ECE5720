@@ -58,6 +58,11 @@ size_t set_num = 0;
 
 uint64_t global_time = 0;
 
+
+size_t num_evictions = 0;
+size_t num_misses = 0;
+size_t num_hits = 0;
+
 /*******************************/
 
 void init_cache(int _set_bits, int _associativity, int _block_bits)
@@ -83,12 +88,14 @@ void init_cache(int _set_bits, int _associativity, int _block_bits)
 	printf("associativity: %lu\n", associativity);
 
 	sets = malloc(sizeof(Set)*nsets);
+	set_num = nsets;
 
 	for(size_t i = 0;i < nsets;i ++)
 	{
 		sets[i] = SET_INITIALIZER;
 
 		sets[i].lines = malloc(sizeof(Line)*associativity);
+		sets[i].line_num = associativity;
 
 		for(size_t j = 0;j < associativity;j ++)
 		{
@@ -134,7 +141,7 @@ void address_info(int* _block, int* _set, int* _tag, uint64_t address)
 }
 
 // Hit or miss
-_Bool check(uint64_t _addr)
+_Bool in_cache(uint64_t _addr)
 {
 	int set_id, block, tag;
 
@@ -153,7 +160,7 @@ _Bool check(uint64_t _addr)
 }
 
 //Returns whether the old set was evicted
-void evict_oldest(uint64_t _addr)
+void evict_for(uint64_t _addr)
 {
 	int set_id, block, tag;
 
@@ -171,42 +178,66 @@ void evict_oldest(uint64_t _addr)
 			sets[set_id].lines[i].age = global_time;
 			sets[set_id].lines[i].tag = tag;
 
+			//printf("Evicted!\n");
 		}
 	}
 }
 
 void load_address(uint64_t _address, uint64_t _size)
 {
-	printf("----load_address()----\n");
+	printf("L %ld,%ld", _address, _size);
 
-	if(check(_address))
+	if(in_cache(_address))
+	{
+		printf(" hit");
+
+		num_hits ++;
+	}
+	else
+	{
+		printf(" miss");
+
+		evict_for(_address);
+
+		num_misses ++;
+		num_evictions ++;
+
+		//if(check(_address)) printf("Address in cache now!\n");
+	}
+
+	printf("\n");
+}
+void store_address(uint64_t _address, uint64_t _size)
+{
+	printf("----store_address()----\n");
+
+	if(in_cache(_address))
 	{
 		printf("Address in cache!\n");
 	}
 	else
 	{
 		printf("Address not in cache!\n");
+
+		evict_for(_address);
+
+		if(in_cache(_address)) printf("Address in cache now!\n");
 	}
-}
-void store_address(uint64_t _address, uint64_t _size)
-{
-	uint64_t set_id = ((_address) & (set_mask)) >> set_mask_n;
-
-	assert(set_id < nsets);
-
-	printf("----store_address()----\n");
-
-	printf("set_id: %lX\n", set_id);
 }
 void modify_address(uint64_t _address, uint64_t _size)
 {
-	uint64_t set_id = (_address) & (set_mask);
+	if(in_cache(_address))
+	{
+		printf("Address in cache!\n");
+	}
+	else
+	{
+		printf("Address not in cache!\n");
 
-	assert(set_id < nsets);
+		evict_for(_address);
 
-	printf("----modify_address()----\n");
-
-	printf("set_id: %lX\n", set_id);
+		if(in_cache(_address)) printf("Address in cache now!\n");
+	}
 }
 
 void parse_input(char** operation, uint64_t** address, uint64_t** size, size_t* ops, char* input)
@@ -409,11 +440,13 @@ int main(int argc, char** argv)
   free(input);
 
   init_cache(set_bits, associativity, block_bits);
-  deinit_cache();
 
   load_address(0x00012341234, 4);
 
-  printSummary(0, 0, 0);
+  deinit_cache();
+
+  printSummary(num_hits, num_misses, num_evictions);
+
   return 0;
 
 }
