@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+./parseoptions -v -s 10 -E 10 -b 10 -t mytrace.trace
