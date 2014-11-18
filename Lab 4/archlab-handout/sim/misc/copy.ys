@@ -1,0 +1,87 @@
+# Cody Herndon
+# A01393116
+
+# David Petrizze
+# A01625825
+
+
+#/* copy_block - Copy src to dest and return xor checksum of src */
+#int copy_block(int *src, int *dest, int len)
+#{
+#	int result = 0;
+#	while (len > 0) {
+#	      int val = *src++;
+#	      *dest++ = val;
+#	      result ˆ= val;
+#	      len--;
+#	}
+#	return result;
+#}
+
+	.pos 0
+Init:
+	irmovl $0x100, %esp
+	irmovl $0x100, %ebp
+	call Main
+	halt
+
+Main:
+	pushl %ebp
+	rrmovl %esp, %ebp	# end preamble
+	
+	irmovl src, %ebx	# ebx = *src
+	pushl %ebx
+	
+	irmovl dest, %ebx	# ebx = *dest
+	pushl %ebx
+	
+	irmovl $0x3, %ebx	# ebx = len
+	pushl %ebx
+
+	call copy_block		#copy_block(int *src, int *dest, int len)
+
+	rrmovl %ebp, %esp	# begin postamble
+	popl %ebp
+	ret
+
+copy_block:
+	pushl %ebp
+	rrmovl %esp, %ebp	# end preamble
+
+	irmovl $0x00, %eax	# result = 0
+	
+	mrmovl 8(%ebp), %ebx	# ebx = len
+	mrmovl 12(%ebp), %ecx	# ecx = *dest
+	mrmovl 16(%ebp), %edx	# edx = *src
+
+Loop:
+	irmovl $0x04, %edi
+	mrmovl (%edx), %esi	# esi = val
+	addl %edi, %edx		# src++
+	rmmovl %esi, (%ecx)	# dest = val
+	addl %edi, %ecx		# dest++
+	xorl %esi, %eax		# result ^= val
+	irmovl $-1, %edi
+	addl %edi, %ebx		# len--
+	jne Loop   		# if(len == -1) return result;
+
+copy_blockEnd:
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
+
+# test blocks for function:
+       	.align 4
+# Source block
+src:
+	.long 0x00a
+	.long 0x0b0
+	.long 0xc00
+
+# Destination block
+dest:
+	.long 0x111
+	.long 0x222
+	.long 0x333
+
+	.pos 0x100
