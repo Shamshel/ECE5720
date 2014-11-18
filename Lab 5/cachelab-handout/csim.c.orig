@@ -458,7 +458,11 @@ int main(int argc, char** argv)
   fclose(fp);
   free(input);
 
+<<<<<<< HEAD
+  deinit_cache();
+=======
   init_cache(set_bits, associativity, block_bits);
+>>>>>>> a30af7b70dae3b32859567376c837a24763b6429
 
   load_address(0x00012341234, 4);
 

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+
+./csim -v -s 2 -E 10 -b 2 -t traces/yi.trace
+./csim-ref -v -s 2 -E 10 -b 2 -t traces/yi.trace

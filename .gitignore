@@ -39,3 +39,8 @@ Icon
 *.exe
 scratch/LabTest*
 *.swp
+
+# Cody: Binaries don't merge
+csim
+*~
+*#
