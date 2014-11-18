@@ -1,0 +1,50 @@
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must ends with two \r.
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# David: I added these
+*.exe
+scratch/LabTest*
+*.swp
+<<<<<<< HEAD
+
+# Cody: Binaries don't merge
+csim
+*~
+*#
+=======
+Lab 5/cachelab-handout/csim
+>>>>>>> 2d9897fb2aa24d59446acdebbd7361f1e23a9427
