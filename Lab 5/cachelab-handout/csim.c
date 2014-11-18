@@ -15,8 +15,6 @@
 
 #define OP_BUFF_LEN 256
 
-_Bool verbose = false;
-
 typedef struct Line
 {
 	_Bool valid_bit;
@@ -35,6 +33,11 @@ typedef struct Set
 
 #define SET_INITIALIZER ((Set){ .lines = 0, .line_num = 0, .last_line = 0})
 
+/********************************/
+/* GLOBALS :DDDD */
+_Bool verbose = false;
+
+
 size_t nsets = 0;
 uint64_t set_mask = 0;
 uint64_t set_mask_n = 0;
@@ -50,8 +53,12 @@ uint64_t tag_mask_n = 0;
 
 size_t associativity = 0;
 
-Set * sets = 0;
+Set* sets = 0;
 size_t set_num = 0;
+
+uint64_t global_time = 0;
+
+/*******************************/
 
 void init_cache(int _set_bits, int _associativity, int _block_bits)
 {
@@ -101,8 +108,30 @@ void deinit_cache()
 	free(sets);
 }
 
+void address_info(int* _block, int* _set, int* _tag, uint64_t address)
+{
+  //set_bits
+  //block_bits
+  //tag_bits
 
-extern void address_info(int * _block, int * _set, int * _tag, uint64_t _addr);
+  //set_mask
+  //block_mask
+  //tag_mask
+
+  int set = 0;
+  int block = 0;
+  int tag = 0;
+ 
+
+  block = (address & block_mask);
+  set = (address & set_mask)>>block_bits;
+  tag = (address & tag_mask)>>(block_bits+set_bits);
+
+  *_set = set;
+  *_block = block;
+  *_tag = tag;
+
+}
 
 // Hit or miss
 _Bool check(uint64_t _addr)
@@ -124,20 +153,11 @@ _Bool check(uint64_t _addr)
 }
 
 //Returns whether the old set was evicted
-_Bool ensure(uint64_t _addr)
+void evict_oldest(uint64_t _addr)
 {
 	int set_id, block, tag;
 
 	address_info(&set_id, &block, &tag, _addr);
-
-	for(size_t i = 0;i < associativity;i ++)
-	{
-		if(sets[set_id].lines[i].tag == tag)
-		{
-			//cache hit
-			return false;
-		}
-	}
 
 	for(size_t i = 0;i < associativity;i ++)
 	{
@@ -148,16 +168,11 @@ _Bool ensure(uint64_t _addr)
 	{
 		if(sets[set_id].lines[i].age == sets[set_id].line_num)
 		{
-			sets[set_id].lines[i].age = 0;
+			sets[set_id].lines[i].age = global_time;
 			sets[set_id].lines[i].tag = tag;
 
-			return true;
 		}
 	}
-
-	printf("Cant get here!  Bad!\n");
-
-	return false;
 }
 
 void load_address(uint64_t _address, uint64_t _size)
@@ -252,31 +267,6 @@ void parse_input(char** operation, uint64_t** address, uint64_t** size, size_t* 
 
 }
 
-void address_info(int* _block, int* _set, int* _tag, uint64_t address)
-{
-  //set_bits
-  //block_bits
-  //tag_bits
-
-  //set_mask
-  //block_mask
-  //tag_mask
-
-  int set = 0;
-  int block = 0;
-  int tag = 0;
- 
-
-  block = (address & block_mask);
-  set = (address & set_mask)>>block_bits;
-  tag = (address & tag_mask)>>(block_bits+set_bits);
-
-  *_set = set;
-  *_block = block;
-  *_tag = tag;
-
-}
-
 void report(int mode)
 {
   switch(mode)
@@ -298,53 +288,10 @@ void report(int mode)
 
 }
 
-void hit_detect(uint64_t address)
-{
-  
-
-}
-
 int main(int argc, char** argv)
 {
   long lSize;
   FILE *fp;
-  fp = fopen("traces/yi.trace", "r");
-
-  if(fp == NULL)
-    {
-      perror("failed to read file...");
-      exit(1);
-
-    }
-
-  fseek(fp, 0L, SEEK_END);
-  lSize = ftell(fp);
-  rewind(fp); //be kind,
-
-  char* op = NULL;
-  uint64_t* addr = NULL;
-  uint64_t* size = NULL;
-  size_t ops = 0;
-  char* input = NULL;
-
-  input = (char*)calloc(1, lSize+1);
-
-  if(input == NULL)
-    {
-      perror("failed to allocate memory for input...");
-      exit(1);
-
-    }
-
-  fread(input, lSize, 1, fp);
-
-  parse_input(&op, &addr, &size, &ops, input);
-
-  printf("num ops: %u\n\r", (unsigned int)ops);
-  printf("first instruction: %c\n\r", op[0]);
-
-  fclose(fp);
-  free(input);
 
   int arg_id = 1;
 
@@ -422,6 +369,44 @@ int main(int argc, char** argv)
     }
 
   printf("trace file: \"%s\"\n", trace_file);
+
+  fp = fopen(trace_file, "r");
+
+  if(fp == NULL)
+    {
+      perror("failed to read file...");
+      exit(1);
+
+    }
+
+  fseek(fp, 0L, SEEK_END);
+  lSize = ftell(fp);
+  rewind(fp); //be kind,
+
+  char* op = NULL;
+  uint64_t* addr = NULL;
+  uint64_t* size = NULL;
+  size_t ops = 0;
+  char* input = NULL;
+
+  input = (char*)calloc(1, lSize+1);
+
+  if(input == NULL)
+    {
+      perror("failed to allocate memory for input...");
+      exit(1);
+
+    }
+
+  fread(input, lSize, 1, fp);
+
+  parse_input(&op, &addr, &size, &ops, input);
+
+  printf("num ops: %u\n\r", (unsigned int)ops);
+  printf("first instruction: %c\n\r", op[0]);
+
+  fclose(fp);
+  free(input);
 
   init_cache(set_bits, associativity, block_bits);
   deinit_cache();
